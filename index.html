@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>ClearMint</title>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#00c896" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ClearMint" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00c896;
+      --green-light: #e6faf5;
+      --green-dark: #009e78;
+      --red: #ff5c5c;
+      --red-light: #fff0f0;
+      --blue: #4f8ef7;
+      --blue-light: #eef4ff;
+      --yellow: #ffb84d;
+      --yellow-light: #fff8ec;
+      --purple: #9b6bf5;
+      --purple-light: #f3eeff;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --muted: #8a94a6;
+      --border: #e8ecf0;
+      --nav-h: 68px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ── TOP HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #00c896 0%, #00a87a 100%);
+      color: white;
+      padding: 20px 20px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { opacity: 0.75; font-weight: 400; }
+    .month-nav { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+    .month-nav button { background: rgba(255,255,255,0.25); border: none; color: white;
+      width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; }
+    .month-nav button:active { background: rgba(255,255,255,0.4); }
+    .month-label { font-size: 15px; font-weight: 600; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: white; border-top: 1px solid var(--border);
+      display: flex; height: var(--nav-h);
+      z-index: 200;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 4px; border: none; background: none;
+      cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 600;
+      transition: color .15s;
+    }
+    .nav-btn .icon { font-size: 22px; }
+    .nav-btn.active { color: var(--green); }
+    .nav-btn.active .icon { transform: scale(1.1); }
+
+    /* ── MAIN CONTENT ── */
+    .main { padding: 16px 16px calc(var(--nav-h) + 16px); }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card); border-radius: 16px;
+      padding: 16px; margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .card-title { font-size: 13px; color: var(--muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+
+    /* ── SUMMARY STRIP ── */
+    .summary-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .sum-card {
+      background: white; border-radius: 14px; padding: 14px 10px;
+      text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .sum-card .amount { font-size: 18px; font-weight: 800; }
+    .sum-card .label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sum-card.income .amount { color: var(--green); }
+    .sum-card.expenses .amount { color: var(--red); }
+    .sum-card.balance .amount { color: var(--blue); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+    .progress-bar { height: 8px; border-radius: 99px; transition: width .4s; }
+    .progress-bar.green { background: var(--green); }
+    .progress-bar.red { background: var(--red); }
+    .progress-bar.blue { background: var(--blue); }
+    .progress-bar.yellow { background: var(--yellow); }
+    .progress-bar.purple { background: var(--purple); }
+
+    /* ── BUDGET ROW ── */
+    .budget-row { margin-bottom: 16px; }
+    .budget-row:last-child { margin-bottom: 0; }
+    .budget-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .budget-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .budget-amounts { font-size: 13px; color: var(--muted); }
+    .budget-amounts strong { color: var(--text); }
+
+    /* ── EXPENSE LIST ── */
+    .expense-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .expense-item:last-child { border-bottom: none; }
+    .exp-icon { width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .exp-info { flex: 1; }
+    .exp-name { font-size: 14px; font-weight: 600; }
+    .exp-cat { font-size: 12px; color: var(--muted); }
+    .exp-amount { font-size: 15px; font-weight: 700; }
+    .exp-amount.income { color: var(--green); }
+    .exp-amount.expense { color: var(--red); }
+
+    /* ── GOALS ── */
+    .goal-card {
+      background: white; border-radius: 16px; padding: 16px;
+      margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .goal-name { font-size: 15px; font-weight: 700; }
+    .goal-emoji { font-size: 22px; }
+    .goal-amounts { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .goal-amounts strong { color: var(--text); font-size: 20px; font-weight: 800; }
+    .goal-pct { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: right; }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed; bottom: calc(var(--nav-h) + 16px); right: 20px;
+      width: 54px; height: 54px; border-radius: 50%;
+      background: linear-gradient(135deg, #00c896, #00a87a);
+      color: white; font-size: 26px; border: none; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,200,150,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 150; transition: transform .15s;
+    }
+    .fab:active { transform: scale(0.93); }
+
+    /* ── MODAL ── */
+    .overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 300; align-items: flex-end; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 480px; padding: 24px;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+    .modal-close {
+      float: right; background: var(--border); border: none;
+      width: 30px; height: 30px; border-radius: 50%; font-size: 18px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; display: block; }
+    .form-input, .form-select {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--border);
+      border-radius: 12px; font-size: 15px; outline: none;
+      transition: border-color .2s; background: white; color: var(--text);
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--green); }
+    .type-toggle { display: flex; gap: 8px; }
+    .type-btn {
+      flex: 1; padding: 10px; border-radius: 10px; border: 2px solid var(--border);
+      background: none; font-size: 14px; font-weight: 600; cursor: pointer;
+      color: var(--muted); transition: all .2s;
+    }
+    .type-btn.active-expense { border-color: var(--red); background: var(--red-light); color: var(--red); }
+    .type-btn.active-income { border-color: var(--green); background: var(--green-light); color: var(--green); }
+    .submit-btn {
+      width: 100%; padding: 15px; background: linear-gradient(135deg, #00c896, #00a87a);
+      color: white; border: none; border-radius: 14px; font-size: 16px;
+      font-weight: 700; cursor: pointer; margin-top: 4px;
+    }
+    .submit-btn:active { opacity: .9; }
+
+    /* ── TABS (within page) ── */
+    .inner-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .inner-tab {
+      padding: 7px 16px; border-radius: 99px; border: none; font-size: 13px;
+      font-weight: 600; cursor: pointer; background: var(--border); color: var(--muted);
+      transition: all .2s;
+    }
+    .inner-tab.active { background: var(--green); color: white; }
+
+    /* ── EMPTY STATE ── */
+    .empty { text-align: center; padding: 32px 16px; color: var(--muted); }
+    .empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
+    .empty p { font-size: 14px; }
+
+    /* ── SECTION HEADER ── */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .section-title { font-size: 16px; font-weight: 800; }
+    .see-all { font-size: 13px; color: var(--green); font-weight: 600; cursor: pointer; background: none; border: none; }
+
+    /* ── ADD GOAL MODAL fields ── */
+    .goal-color-row { display: flex; gap: 10px; }
+    .color-dot {
+      width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+      border: 3px solid transparent; transition: border-color .2s;
+    }
+    .color-dot.selected { border-color: var(--text); }
+
+    /* page visibility */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── QUICK INSIGHT CARD ── */
+    .insight {
+      background: linear-gradient(135deg, #4f8ef7, #3a6ed8);
+      color: white; border-radius: 16px; padding: 16px; margin-bottom: 14px;
+    }
+    .insight-label { font-size: 12px; opacity: .8; font-weight: 600; text-transform: uppercase; }
+    .insight-msg { font-size: 15px; font-weight: 700; margin-top: 4px; }
+
+    /* ── DELETE BTN ── */
+    .del-btn {
+      background: var(--red-light); border: none; color: var(--red);
+      width: 32px; height: 32px; border-radius: 8px; font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Clear<span>Mint</span> 🌿</div>
+    <div class="avatar">😊</div>
+  </div>
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <span class="month-label" id="monthLabel"></span>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('dashboard',this)">
+    <span class="icon">🏠</span>Home
+  </button>
+  <button class="nav-btn" onclick="showPage('expenses',this)">
+    <span class="icon">💸</span>Expenses
+  </button>
+  <button class="nav-btn" onclick="showPage('budget',this)">
+    <span class="icon">📊</span>Budget
+  </button>
+  <button class="nav-btn" onclick="showPage('goals',this)">
+    <span class="icon">🎯</span>Goals
+  </button>
+</nav>
+
+<!-- FAB -->
+<button class="fab" onclick="openAddModal()" title="Add transaction">＋</button>
+
+<!-- ═══════════════════ PAGES ═══════════════════ -->
+
+<!-- DASHBOARD -->
+<div class="main page active" id="page-dashboard">
+
+  <div class="summary-strip">
+    <div class="sum-card income">
+      <div class="amount" id="d-income">$0</div>
+      <div class="label">Income</div>
+    </div>
+    <div class="sum-card expenses">
+      <div class="amount" id="d-expense">$0</div>
+      <div class="label">Spent</div>
+    </div>
+    <div class="sum-card balance">
+      <div class="amount" id="d-balance">$0</div>
+      <div class="label">Left</div>
+    </div>
+  </div>
+
+  <div class="insight" id="insight-card">
+    <div class="insight-label">💡 Quick Insight</div>
+    <div class="insight-msg" id="insight-msg">Add your first transaction to get started!</div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <span class="section-title">Recent Transactions</span>
+      <button class="see-all" onclick="showPage('expenses', document.querySelectorAll('.nav-btn')[1])">See all</button>
+    </div>
+    <div id="recent-list">
+      <div class="empty"><div class="empty-icon">📭</div><p>No transactions this month</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <span class="section-title">Top Spending</span>
+    </div>
+    <div id="top-spending-list">
+      <div class="empty"><div class="empty-icon">📈</div><p>No data yet</p></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- EXPENSES PAGE -->
+<div class="main page" id="page-expenses">
+  <div class="inner-tabs">
+    <button class="inner-tab active" onclick="filterExpenses('all',this)">All</button>
+    <button class="inner-tab" onclick="filterExpenses('expense',this)">Expenses</button>
+    <button class="inner-tab" onclick="filterExpenses('income',this)">Income</button>
+  </div>
+  <div class="card" style="padding:0 16px;">
+    <div id="expense-list" style="padding:0"></div>
+  </div>
+</div>
+
+<!-- BUDGET PAGE -->
+<div class="main page" id="page-budget">
+  <div class="card" id="budget-list">
+    <div class="card-title">Monthly Budgets</div>
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<!-- GOALS PAGE -->
+<div class="main page" id="page-goals">
+  <div id="goals-list"></div>
+  <button class="submit-btn" onclick="openGoalModal()" style="margin-top:4px">＋ Add New Goal</button>
+</div>
+
+<!-- ═══════════════════ ADD TRANSACTION MODAL ═══════════════════ -->
+<div class="overlay" id="add-overlay" onclick="closeModalOnBg(event,'add-overlay')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-overlay')">✕</button>
+    <div class="modal-title">Add Transaction</div>
+
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <div class="type-toggle">
+        <button class="type-btn active-expense" id="btn-expense" onclick="setType('expense')">💸 Expense</button>
+        <button class="type-btn" id="btn-income" onclick="setType('income')">💰 Income</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Amount ($)</label>
+      <input class="form-input" id="tx-amount" type="number" placeholder="0.00" min="0" step="0.01" inputmode="decimal" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input class="form-input" id="tx-desc" type="text" placeholder="e.g. Grocery run" />
+    </div>
+
+    <div class="form-group" id="cat-group">
+      <label class="form-label">Category</label>
+      <select class="form-select" id="tx-cat">
+        <option value="🍔 Food">🍔 Food</option>
+        <option value="🚗 Transport">🚗 Transport</option>
+        <option value="🏠 Housing">🏠 Housing</option>
+        <option value="💊 Health">💊 Health</option>
+        <option value="🎉 Entertainment">🎉 Entertainment</option>
+        <option value="👗 Shopping">👗 Shopping</option>
+        <option value="📚 Education">📚 Education</option>
+        <option value="🔧 Utilities">🔧 Utilities</option>
+        <option value="✈️ Travel">✈️ Travel</option>
+        <option value="💼 Other">💼 Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" id="tx-date" type="date" />
+    </div>
+
+    <button class="submit-btn" onclick="saveTransaction()">Save Transaction</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ ADD GOAL MODAL ═══════════════════ -->
+<div class="overlay" id="goal-overlay" onclick="closeModalOnBg(event,'goal-overlay')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('goal-overlay')">✕</button>
+    <div class="modal-title">New Savings Goal</div>
+
+    <div class="form-group">
+      <label class="form-label">Goal Name</label>
+      <input class="form-input" id="goal-name" type="text" placeholder="e.g. Emergency Fund" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emoji Icon</label>
+      <input class="form-input" id="goal-emoji" type="text" placeholder="🏖️" maxlength="2" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Target Amount ($)</label>
+      <input class="form-input" id="goal-target" type="number" placeholder="5000" min="1" inputmode="decimal" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Current Savings ($)</label>
+      <input class="form-input" id="goal-current" type="number" placeholder="0" min="0" inputmode="decimal" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Color</label>
+      <div class="goal-color-row" id="color-picker">
+        <div class="color-dot selected" style="background:#00c896" data-color="green" onclick="pickColor(this)"></div>
+        <div class="color-dot" style="background:#4f8ef7" data-color="blue" onclick="pickColor(this)"></div>
+        <div class="color-dot" style="background:#ff5c5c" data-color="red" onclick="pickColor(this)"></div>
+        <div class="color-dot" style="background:#ffb84d" data-color="yellow" onclick="pickColor(this)"></div>
+        <div class="color-dot" style="background:#9b6bf5" data-color="purple" onclick="pickColor(this)"></div>
+      </div>
+    </div>
+    <button class="submit-btn" onclick="saveGoal()">Add Goal</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCRIPT ═══════════════════ -->
+<script>
+  // ── STATE ──
+  let state = JSON.parse(localStorage.getItem('clearmint') || 'null') || {
+    transactions: [],
+    goals: [],
+    budgets: {
+      '🍔 Food': 500,
+      '🚗 Transport': 200,
+      '🏠 Housing': 1200,
+      '💊 Health': 150,
+      '🎉 Entertainment': 200,
+      '👗 Shopping': 300,
+      '📚 Education': 100,
+      '🔧 Utilities': 180,
+      '✈️ Travel': 400,
+      '💼 Other': 100
+    }
+  };
+
+  let currentYear, currentMonth, expFilter = 'all', selectedGoalColor = 'green', txType = 'expense';
+
+  function save() { localStorage.setItem('clearmint', JSON.stringify(state)); }
+
+  // ── MONTH NAVIGATION ──
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+
+  function updateMonthLabel() {
+    document.getElementById('monthLabel').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+  }
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+    updateMonthLabel();
+    renderAll();
+  }
+
+  // ── PAGE NAV ──
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    if(btn) btn.classList.add('active');
+    renderAll();
+  }
+
+  // ── FILTER HELPERS ──
+  function txOfMonth() {
+    return state.transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    });
+  }
+
+  // ── RENDER ALL ──
+  function renderAll() {
+    renderDashboard();
+    renderExpenses();
+    renderBudget();
+    renderGoals();
+  }
+
+  // ── DASHBOARD ──
+  function renderDashboard() {
+    const txs = txOfMonth();
+    const income = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const expense = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    const balance = income - expense;
+
+    document.getElementById('d-income').textContent = fmt(income);
+    document.getElementById('d-expense').textContent = fmt(expense);
+    document.getElementById('d-balance').textContent = fmt(balance);
+
+    // insight
+    let msg = 'Add your first transaction to get started!';
+    if(txs.length > 0) {
+      const pct = income > 0 ? Math.round((expense/income)*100) : 0;
+      if(income === 0) msg = `You've spent ${fmt(expense)} — add income to track savings rate.`;
+      else if(pct < 50) msg = `Great job! You've only spent ${pct}% of your income this month. 🎉`;
+      else if(pct < 80) msg = `You've spent ${pct}% of your income. Keep an eye on expenses.`;
+      else if(pct < 100) msg = `Heads up — you've spent ${pct}% of your income this month! ⚠️`;
+      else msg = `You've exceeded your income by ${fmt(expense-income)} this month. 😬`;
+    }
+    document.getElementById('insight-msg').textContent = msg;
+
+    // recent (last 5)
+    const recent = [...txs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+    const rl = document.getElementById('recent-list');
+    rl.innerHTML = recent.length ? recent.map(txRow).join('') :
+      '<div class="empty"><div class="empty-icon">📭</div><p>No transactions this month</p></div>';
+
+    // top spending categories
+    const cats = {};
+    txs.filter(t=>t.type==='expense').forEach(t=>{
+      cats[t.category] = (cats[t.category]||0) + t.amount;
+    });
+    const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    const tsl = document.getElementById('top-spending-list');
+    if(sorted.length === 0) {
+      tsl.innerHTML = '<div class="empty"><div class="empty-icon">📈</div><p>No data yet</p></div>';
+    } else {
+      const max = sorted[0][1];
+      tsl.innerHTML = sorted.map(([cat,amt])=>`
+        <div class="budget-row">
+          <div class="budget-meta">
+            <span class="budget-name">${cat}</span>
+            <span class="budget-amounts"><strong>${fmt(amt)}</strong></span>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar red" style="width:${Math.round(amt/max*100)}%"></div></div>
+        </div>`).join('');
+    }
+  }
+
+  function txRow(t, showDel=false) {
+    const emoji = t.category ? t.category.split(' ')[0] : (t.type==='income'?'💰':'💸');
+    const bgMap = {'🍔':'#fff8ec','🚗':'#eef4ff','🏠':'#f3eeff','💊':'#fff0f0',
+                   '🎉':'#e6faf5','👗':'#fff0fa','📚':'#eef4ff','🔧':'#f5f7fa','✈️':'#eef4ff','💼':'#f5f7fa','💰':'#e6faf5'};
+    const bg = bgMap[emoji] || '#f5f7fa';
+    const dateStr = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="expense-item">
+      <div class="exp-icon" style="background:${bg}">${emoji}</div>
+      <div class="exp-info">
+        <div class="exp-name">${esc(t.desc)}</div>
+        <div class="exp-cat">${t.category||''} · ${dateStr}</div>
+      </div>
+      <div class="exp-amount ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+      ${showDel ? `<button class="del-btn" onclick="deleteTransaction('${t.id}')">🗑</button>` : ''}
+    </div>`;
+  }
+
+  // ── EXPENSES ──
+  function renderExpenses() {
+    let txs = txOfMonth().sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if(expFilter !== 'all') txs = txs.filter(t=>t.type===expFilter);
+    const el = document.getElementById('expense-list');
+    el.innerHTML = txs.length ? txs.map(t=>txRow(t,true)).join('') :
+      '<div class="empty"><div class="empty-icon">📭</div><p>Nothing here yet</p></div>';
+  }
+
+  function filterExpenses(f, btn) {
+    expFilter = f;
+    document.querySelectorAll('.inner-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderExpenses();
+  }
+
+  function deleteTransaction(id) {
+    state.transactions = state.transactions.filter(t=>t.id!==id);
+    save(); renderAll();
+  }
+
+  // ── BUDGET ──
+  function renderBudget() {
+    const txs = txOfMonth();
+    const bl = document.getElementById('budget-list');
+    const colors = ['green','blue','red','yellow','purple','green','blue','red','yellow','purple'];
+    const rows = Object.entries(state.budgets).map(([cat,limit],i)=>{
+      const spent = txs.filter(t=>t.type==='expense'&&t.category===cat).reduce((s,t)=>s+t.amount,0);
+      const pct = Math.min(Math.round(spent/limit*100), 100);
+      const over = spent > limit;
+      const color = over ? 'red' : colors[i % colors.length];
+      return `<div class="budget-row">
+        <div class="budget-meta">
+          <span class="budget-name">${cat}</span>
+          <span class="budget-amounts"><strong>${fmt(spent)}</strong> / ${fmt(limit)}</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar ${color}" style="width:${pct}%"></div></div>
+        ${over ? `<div style="font-size:12px;color:var(--red);margin-top:4px">Over budget by ${fmt(spent-limit)}</div>` : `<div style="font-size:12px;color:var(--muted);margin-top:4px">${fmt(limit-spent)} remaining</div>`}
+      </div>`;
+    });
+    bl.innerHTML = '<div class="card-title">Monthly Budgets</div>' + rows.join('');
+  }
+
+  // ── GOALS ──
+  function renderGoals() {
+    const gl = document.getElementById('goals-list');
+    if(state.goals.length === 0) {
+      gl.innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">🎯</div><p>Set your first savings goal!</p></div></div>';
+      return;
+    }
+    gl.innerHTML = state.goals.map((g,i)=>{
+      const pct = Math.min(Math.round(g.current/g.target*100),100);
+      return `<div class="goal-card">
+        <div class="goal-header">
+          <div>
+            <div class="goal-name">${esc(g.name)}</div>
+            <div class="goal-amounts"><strong>${fmt(g.current)}</strong> of ${fmt(g.target)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="goal-emoji">${g.emoji||'🎯'}</span>
+            <button class="del-btn" onclick="deleteGoal(${i})">🗑</button>
+          </div>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar ${g.color||'green'}" style="width:${pct}%"></div></div>
+        <div class="goal-pct">${pct}% saved${pct>=100?' 🎉 Goal reached!':''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function deleteGoal(i) {
+    state.goals.splice(i,1); save(); renderGoals();
+  }
+
+  // ── ADD TRANSACTION ──
+  function openAddModal() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tx-date').value = today;
+    document.getElementById('tx-amount').value = '';
+    document.getElementById('tx-desc').value = '';
+    setType('expense');
+    document.getElementById('add-overlay').classList.add('open');
+  }
+
+  function setType(t) {
+    txType = t;
+    document.getElementById('btn-expense').className = 'type-btn' + (t==='expense'?' active-expense':'');
+    document.getElementById('btn-income').className = 'type-btn' + (t==='income'?' active-income':'');
+    document.getElementById('cat-group').style.display = t==='expense'?'block':'none';
+  }
+
+  function saveTransaction() {
+    const amount = parseFloat(document.getElementById('tx-amount').value);
+    const desc = document.getElementById('tx-desc').value.trim();
+    const date = document.getElementById('tx-date').value;
+    const cat = document.getElementById('tx-cat').value;
+    if(!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+    if(!desc) { alert('Please add a description.'); return; }
+    if(!date) { alert('Please select a date.'); return; }
+    state.transactions.push({
+      id: Date.now().toString(),
+      type: txType, amount, desc, date,
+      category: txType==='expense' ? cat : '💰 Income'
+    });
+    save(); closeModal('add-overlay'); renderAll();
+  }
+
+  // ── ADD GOAL ──
+  function openGoalModal() {
+    document.getElementById('goal-name').value = '';
+    document.getElementById('goal-emoji').value = '';
+    document.getElementById('goal-target').value = '';
+    document.getElementById('goal-current').value = '';
+    selectedGoalColor = 'green';
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+    document.querySelector('.color-dot[data-color="green"]').classList.add('selected');
+    document.getElementById('goal-overlay').classList.add('open');
+  }
+
+  function pickColor(el) {
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGoalColor = el.dataset.color;
+  }
+
+  function saveGoal() {
+    const name = document.getElementById('goal-name').value.trim();
+    const emoji = document.getElementById('goal-emoji').value.trim() || '🎯';
+    const target = parseFloat(document.getElementById('goal-target').value);
+    const current = parseFloat(document.getElementById('goal-current').value) || 0;
+    if(!name) { alert('Please enter a goal name.'); return; }
+    if(!target || target <= 0) { alert('Please enter a target amount.'); return; }
+    state.goals.push({ name, emoji, target, current, color: selectedGoalColor });
+    save(); closeModal('goal-overlay'); renderGoals();
+  }
+
+  // ── MODAL HELPERS ──
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeModalOnBg(e, id) { if(e.target.id===id) closeModal(id); }
+
+  // ── UTILS ──
+  function fmt(n) { return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function esc(s) { return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ── INIT ──
+  updateMonthLabel();
+  renderAll();
+</script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js');
+    });
+  }
+</script>
+</body>
+</html>

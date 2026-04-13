@@ -1,0 +1,18 @@
+{
+  "name": "ClearMint",
+  "short_name": "ClearMint",
+  "description": "Personal budget & expense tracker",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#00c896",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ]
+}

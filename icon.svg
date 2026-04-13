@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00c896"/>
+      <stop offset="100%" stop-color="#00a87a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="192" height="192" rx="42" fill="url(#bg)"/>
+  <!-- Leaf shape (left) -->
+  <ellipse cx="88" cy="88" rx="32" ry="46" fill="white" opacity="0.85" transform="rotate(-22 88 88)"/>
+  <!-- Leaf shape (right) -->
+  <ellipse cx="104" cy="88" rx="32" ry="46" fill="white" opacity="0.65" transform="rotate(22 104 88)"/>
+  <!-- Stem -->
+  <line x1="96" y1="118" x2="96" y2="148" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <!-- Center vein -->
+  <line x1="96" y1="64" x2="96" y2="118" stroke="#009e78" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Side veins -->
+  <line x1="96" y1="80" x2="76" y2="68" stroke="#009e78" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="96" y1="80" x2="116" y2="68" stroke="#009e78" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="96" y1="96" x2="72" y2="86" stroke="#009e78" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="96" y1="96" x2="120" y2="86" stroke="#009e78" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
